@@ -14,6 +14,7 @@ class Book(Base):
     book_title = Column(String, index = True)
     book_author = Column(String, index = True)
     book_genre = Column(String, index = True)
+    book_description = Column(String, index = True)
     book_year = Column(INTEGER, index = True)
     book_price = Column(FLOAT, index = True)
 

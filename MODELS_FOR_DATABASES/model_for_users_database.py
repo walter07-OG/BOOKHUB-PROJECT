@@ -8,7 +8,7 @@ for data retrieval)'''
 
 Base = declarative_base()
 
-class Book(Base):
+class USERS(Base):
     __tablename__ =  "USERS"
     username = Column(String, index = True)
     user_id = Column(INTEGER, primary_key = True, index = True)

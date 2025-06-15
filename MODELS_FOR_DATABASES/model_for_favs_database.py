@@ -1,6 +1,6 @@
 from sqlalchemy.orm import declarative_base
 from DATABASES import favourite_book_database
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, JSON
 from typing import List
     
 '''We design the model of the Table we want to use for storing information
@@ -9,12 +9,12 @@ for data retrieval)'''
 
 Base = declarative_base()
 
-class Book(Base):
+class FAVOURITE_BOOK(Base):
     __tablename__ =  "USER_FAVOURITES"
     '''NOTE: If two hashed passwords cannot be the same,  then we will use the hashed passwords 
     as the primary key.'''
     user_password = Column(String, primary_key = True, index = True)
-    user_favourites = Column(, index = True)
+    user_favourites = Column(JSON, index = True)
 
 '''let's create the table, using metadata'''
 Base.metadata.create_all(bind = favourite_book_database.the_engine)

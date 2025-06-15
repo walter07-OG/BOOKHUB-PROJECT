@@ -18,4 +18,4 @@ a session to perform database functions.'''
 '''Settting the autocommit to be False prevents the database from 
 automatically commiting.'''
 '''The "bind" is responsible for linking the engine, which contains the URL for the database.'''
-the_session = sessionmaker(autoflush = False, bind = the_engine)
+the_session_for_books = sessionmaker(autoflush = False, bind = the_engine)
