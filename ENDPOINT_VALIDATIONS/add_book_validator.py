@@ -5,7 +5,7 @@ current_year = datetime.now().year
 '''Definition of the class to validate the POST request made to validate the creation of a new book'''
 
 class AddBook(BaseModel):
-    book_id: str | int | float
+    book_id: int = Field(gt = 0)
     book_title: str
     book_author: str
     book_genre: str
