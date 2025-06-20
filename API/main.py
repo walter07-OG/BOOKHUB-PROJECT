@@ -27,7 +27,7 @@ the_users_favourites_database = model_for_favs_database.FAVOURITE_BOOK
 from  ENDPOINT_VALIDATIONS import get_all_books_validator
 from ENDPOINT_VALIDATIONS import book_details_validator
 from ENDPOINT_VALIDATIONS import add_book_validator
-from ENDPOINT_VALIDATIONS import update_book_validator_with_id
+from ENDPOINT_VALIDATIONS import update_book_validator
 from ENDPOINT_VALIDATIONS import delete_book_validator
 #*****
 
@@ -58,11 +58,15 @@ def user_favourite_database_session():
 
 
 '''we create an instance of the fastapi app'''
-book_app = FastAPI(docs_url = "/docs")
+book_app = FastAPI(debug=True)
 
 
 #The definition for all the endpoints which will be used for the API.
 
+
+
+
+'''THESE ENDPOINTS ARE THE CORE(RESTFUL) BOOK API ENDPOINTS'''
 
 @book_app.get("/books", response_model = List[get_all_books_validator.Response_For_Get_All_Books])
 def get_all_books(database_connection: Session = Depends(book_database_session)):
@@ -72,12 +76,14 @@ def get_all_books(database_connection: Session = Depends(book_database_session))
     Returns a JSON response with status, message, and a list of all books.
     Depends on a database session provided by book_database_session.
     """
-    the_books_in_the_database = database_connection.query(book_database).all()
-    return {
-        "status": "success",
+    the_books_in_the_database = database_connection.query(the_book_database).all()
+    return [
+        {
+        "success": "True",
         "message": "Books retrieved successfully.",
-        "data": the_books_in_the_database
+        "books": the_books_in_the_database
     }
+    ]
 
 
 @book_app.get("/books/{book_id}", response_model = List[book_details_validator.Response_For_Book_Details])
@@ -93,17 +99,21 @@ def get_book_with_id(book_id: Annotated[int, Path(gt = 0, description = "Please 
     book = database_connection.query(the_book_database).filter(the_book_database.book_id == book_id).first()
 
     if not book:
-        return {
+        return [
+            {
             "status": "error",
             "message": f"Book with ID {book_id} not found.",
             "data": None
         }
+        ]
     
-    return {
+    return [
+        {
         "status": "success",
         "message": "Book details retrieved successfully.",
         "data": book
     }
+    ]
 
 @book_app.post("/add_book", response_model = List[add_book_validator.ResponseForAddBook])
 def add_books(book: add_book_validator.AddBook, database_connection: Session = Depends(book_database_session)):
@@ -112,63 +122,117 @@ def add_books(book: add_book_validator.AddBook, database_connection: Session = D
         database_connection.add(new_book)
         database_connection.commit()
         database_connection.refresh(new_book)
-    except BaseException as exception:
-        return {
-            "error message": "Sorry there was an error in the submited model",
-            "solution": "Oh! so bad for the unseccfull API call. The solution to this problem is that, 'You make sure that, the model can be changed to a json'"
-        }
-
-@book_app.put("/update_book_by_id", response_model = List[update_book_validator_with_id.UpdateBookIdResponse])
-def update_book(book_to_update_info: update_book_validator_with_id.UpdateBookId, database_connection: Session = Depends(book_database_session)):
-    book_to_update_id  = book_to_update_info.book_id
-    book = database_connection.query(the_book_database).filter(the_book_database.book_id == book_to_update_id).first()
-    for index, updated_attribute in book_to_update_info.model_dump().items():
-        try:
-            setattr(book, index, updated_attribute)
-            database_connection.commit()
-            database_connection.refresh
-        except AttributeError as AE:
-            return {
-                "error message": f"Sorry, there was an error in updating the attribute '{index}' of the book with ID {book_to_update_id} due to an AttributeError. Please make sure that all the keys match the database fields."
+        return [
+            {
+            "success": True,
+            "message": "Book added successfully.",
+            "book": {
+                "book_id": book.book_id,
+                "book_title": book.book_title,
+                "book_author": book.book_author,
+                "book_genre": book.book_genre,
+                "book_year": book.book_year,
+                "book_price": book.book_price,
+                "book_description": book.book_description
             }
-
-
-@book_app.delete("/delete_a_book_by_id", response_model = delete_book_validator.DeleteBookResponse)
-def delete_book(book_id: delete_book_validator.DeleteBook, database_connection: Session = Depends(book_database_session)):
-    book_to_delete = database_connection.query(the_book_database).filter(the_book_database.book_id == book_id).first()
-    if not book_to_delete:
-        return {
-            "error message": f"Sorry there is no book with an id, '{book_id}'",
-            "book_to_delete_info": {
-                "book_id":f"{book_id}"
-            },
-            "success": False
+            }
+        ]
+    except BaseException as exception:
+        return [
+            {
+            "success": False,
+            "message": "Sorry there was an error in the submited model. The solution to this problem is that,  make sure  the model can be changed to a json",
+            "book": {}
         }
+
+        ]
+@book_app.put("/update_book_by_id/{book_id}", response_model = List[update_book_validator.UpdateBookIdResponse])
+def update_book(book_id: Annotated[int, Path(gt = 0, description = "Please make sure that the ID of the book is positive!")], database_connection: Session = Depends(book_database_session)):
+    book = database_connection.query(the_book_database).filter(the_book_database.book_id == book_id).first()
+    if book:
+        for key, value in book.model_dump().items():
+            if value is not None:
+                try:
+                    setattr(book, key, value)
+                except (TypeError, ValueError) as TV_error:
+                    return [
+                    {
+                "message": f"Sorry, there was an error in updating the attribute '{key}' of the book with ID {book_id} due to a ValueError or TypeError  Please make sure that all the values of the keys are in the expected type",
+                "success": False,
+                "code": 500,
+            }
+                ]
+            
+                
+            
+        database_connection.commit()
+        database_connection.refresh(book)
+        return [
+                    {
+                        "message": f"You have successfully updated the book, with the ID of '{book_id}'",
+                        "success": True,
+                        "code": 200,
+                        "new_price": book.book_price
+                    }
+                ]
+    else:
+        return [
+            {
+                "message": f"Sorry, there was an error in updating the book with ID, '{book_id}'. There is no book with such ID. We suppose you create a new book with that ID or You update the ID first before updating anything else.",
+                "success": False,
+                "code": 500,
+                "new_price": 4.5
+            }
+        ]
+                    
+                
+    
+    
+
+
+
+@book_app.delete("/delete_a_book_by_id", response_model = List[delete_book_validator.DeleteBookResponse])
+def delete_book(book_to_delete_info: delete_book_validator.DeleteBook, database_connection: Session = Depends(book_database_session)):
+    book_to_delete = database_connection.query(the_book_database).filter(the_book_database.book_id == book_to_delete_info.book_id).first()
+    if not book_to_delete:
+        return [
+            {
+            "message": f"Sorry there is no book with an id, '{book_to_delete_info.book_id}'",
+            "book_deleted_info": book_to_delete,
+            "success": False
+            }
+        ]
+    
     database_connection.delete(book_to_delete)
     database_connection.commit()
-    return {
-        "message": f"You have successfully deleted the book with the ID, '{book_id}'",
-        "book_deleted_info": {
-            "book_id": book_to_delete.book_id,
-            "book_author": book_to_delete.book_author,
-            "book_title": book_to_delete.book_title,
-            "book_price": book_to_delete.book_price,
-            "book_genre": book_to_delete.book_genre,
-            "book_year": book_to_delete.book_year,
-            "book_description": book_to_delete.book_description
+    return [
+        {
+            "message": f"You have successfully deleted the book with an ID of '{book_to_delete_info.book_id}'",
+            "book_deleted_info": book_to_delete,
+            "success": True    
         }
-    }
+    ]
+
+
+
+
+'''THESE ENDPOINTS ARE FOR SEARCH AND FILTERS OF BOOKS IN THE DATABASE.'''
+
 @book_app.get("/search_a_book_by_title/{book_title}")
-def get_book(book_title: str, database_connection: Session = Depends(book_database_session)):
+def get_book_with_title(book_title: str, database_connection: Session = Depends(book_database_session)):
     book = database_connection.query(the_book_database).filter(the_book_database.book_title == book_title).all()
     if not book:
         return {
             "message": f"Sorry! there is no book with an ID of, '{book_title}'.",
-            "book_info": f"book_id: {book_title}",
-            "success": False
+            "sucess": True,
+            "book_info": f"book_id: {book_title}"
         }
     return {
         "message": f"You have sucessfully retrieved the book with the title, '{book_title}'.",
-        "book_info": book,
-        "sucess": True
+        "sucess": True,
+        "book_info": book
     }
+
+
+@book_app.get("/search_book_by_author")
+def get_book_with_author():...

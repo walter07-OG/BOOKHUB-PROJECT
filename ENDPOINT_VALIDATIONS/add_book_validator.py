@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
+from typing import Dict
 
 current_year = datetime.now().year
 '''Definition of the class to validate the POST request made to validate the creation of a new book'''
@@ -12,6 +13,9 @@ class AddBook(BaseModel):
     book_year: int = Field(ge=1000, le=current_year)
     book_price: float = Field(gt = 0)
     book_description: str
+
+    class Config:
+        orm_mode = True
 
     @field_validator('book_title', 'book_author', 'book_genre', 'book_description')
     @classmethod
@@ -26,5 +30,6 @@ class AddBook(BaseModel):
 
 '''Definition of class to validate the output to the user after the book has been added to the database.'''
 class ResponseForAddBook(BaseModel):
-    book: dict
-    message: dict
+    success: bool
+    message: str
+    book: Dict[str, str | int | float]
