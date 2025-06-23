@@ -68,7 +68,7 @@ book_app = FastAPI(debug=True)
 
 '''THESE ENDPOINTS ARE THE CORE(RESTFUL) BOOK API ENDPOINTS'''
 
-@book_app.get("/books", response_model = List[get_all_books_validator.Response_For_Get_All_Books])
+@book_app.get("/books", response_model = List[get_all_books_validator.Response_For_Get_All_Books], tags = ["Search Book"])
 def get_all_books(database_connection: Session = Depends(book_database_session)):
     """
     Retrieve all books from the database.
@@ -86,7 +86,7 @@ def get_all_books(database_connection: Session = Depends(book_database_session))
     ]
 
 
-@book_app.get("/books/{book_id}", response_model = List[book_details_validator.Response_For_Book_Details])
+@book_app.get("/books/{book_id}", response_model = List[book_details_validator.Response_For_Book_Details], tags = ["Search Book"])
 def get_book_with_id(book_id: Annotated[int, Path(gt = 0, description = "Please make sure that the ID of the book is positive!")], database_connection: Session = Depends(book_database_session)):
 
     #Retrieve a book's details by its unique positive ID.
@@ -115,9 +115,27 @@ def get_book_with_id(book_id: Annotated[int, Path(gt = 0, description = "Please 
     }
     ]
 
-@book_app.post("/add_book", response_model = List[add_book_validator.ResponseForAddBook])
+@book_app.post("/add_book", response_model = List[add_book_validator.ResponseForAddBook], tags = ["Add Book"])
 def add_books(book: add_book_validator.AddBook, database_connection: Session = Depends(book_database_session)):
     try:
+        search_book = database_connection.query(the_book_database).filter(the_book_database.book_id == book.book_id).first()
+        if search_book:
+            return [
+                {
+                    "success": False,
+                    "message": "Sorry it seems the book already exists!",
+                    "book": {
+                        "book_id": search_book.book_id,
+                        "book_title": search_book.book_title,
+                        "book_author": search_book.book_author,
+                        "book_genre": search_book.book_genre,
+                        "book_year": search_book.book_year,
+                        "book_price": search_book.book_price,
+                        "book_description": search_book.book_description
+                    }
+                    
+                }
+            ]
         new_book = model_for_book_database.Book(**book.model_dump())
         database_connection.add(new_book)
         database_connection.commit()
@@ -146,35 +164,33 @@ def add_books(book: add_book_validator.AddBook, database_connection: Session = D
         }
 
         ]
-@book_app.put("/update_book_by_id/{book_id}", response_model = List[update_book_validator.UpdateBookIdResponse])
-def update_book(book_id: Annotated[int, Path(gt = 0, description = "Please make sure that the ID of the book is positive!")], database_connection: Session = Depends(book_database_session)):
+@book_app.put("/update_book_by_id/{book_id}", response_model = List[update_book_validator.UpdateBookIdResponse], tags = ["Update Book"])
+def update_book(book_id: Annotated[int, Path(gt = 0, description = "Please make sure that the ID of the book is positive!")], Book_to_update_info: update_book_validator.UpdateBookId, database_connection: Session = Depends(book_database_session)):
     book = database_connection.query(the_book_database).filter(the_book_database.book_id == book_id).first()
     if book:
-        for key, value in book.model_dump().items():
-            if value is not None:
-                try:
-                    setattr(book, key, value)
-                except (TypeError, ValueError) as TV_error:
+        # Only update fields provided by the user
+        book_updates =  Book_to_update_info.model_dump(exclude_defaults = True)
+        for key, value in book_updates.items():
+            try:
+                setattr(book, key, value)
+            except (TypeError, ValueError, AttributeError) as TV_error:
                     return [
-                    {
-                "message": f"Sorry, there was an error in updating the attribute '{key}' of the book with ID {book_id} due to a ValueError or TypeError  Please make sure that all the values of the keys are in the expected type",
-                "success": False,
-                "code": 500,
-            }
-                ]
-            
-                
-            
+                        {
+                            "message": f"Sorry, there was an error in updating the attribute '{key}' of the book with ID {book_id} due to a ValueError, Attribute error or TypeError. Please make sure that all the values of the keys are in the expected type.",
+                            "success": False,
+                            "code": 500,
+                        }
+                    ]
         database_connection.commit()
         database_connection.refresh(book)
         return [
-                    {
-                        "message": f"You have successfully updated the book, with the ID of '{book_id}'",
-                        "success": True,
-                        "code": 200,
-                        "new_price": book.book_price
-                    }
-                ]
+            {
+                "message": f"You have successfully updated the book, with the ID of '{book_id}'",
+                "success": True,
+                "code": 200,
+                "new_price": book.book_price
+            }
+        ]
     else:
         return [
             {
@@ -191,7 +207,7 @@ def update_book(book_id: Annotated[int, Path(gt = 0, description = "Please make 
 
 
 
-@book_app.delete("/delete_a_book_by_id", response_model = List[delete_book_validator.DeleteBookResponse])
+@book_app.delete("/delete_a_book_by_id", response_model = List[delete_book_validator.DeleteBookResponse], tags = ["Delete Book"])
 def delete_book(book_to_delete_info: delete_book_validator.DeleteBook, database_connection: Session = Depends(book_database_session)):
     book_to_delete = database_connection.query(the_book_database).filter(the_book_database.book_id == book_to_delete_info.book_id).first()
     if not book_to_delete:
@@ -205,6 +221,7 @@ def delete_book(book_to_delete_info: delete_book_validator.DeleteBook, database_
     
     database_connection.delete(book_to_delete)
     database_connection.commit()
+    database_connection.refresh
     return [
         {
             "message": f"You have successfully deleted the book with an ID of '{book_to_delete_info.book_id}'",
@@ -218,7 +235,7 @@ def delete_book(book_to_delete_info: delete_book_validator.DeleteBook, database_
 
 '''THESE ENDPOINTS ARE FOR SEARCH AND FILTERS OF BOOKS IN THE DATABASE.'''
 
-@book_app.get("/search_a_book_by_title/{book_title}")
+@book_app.get("/search_a_book_by_title/{book_title}", tags = ["Search Book "])
 def get_book_with_title(book_title: str, database_connection: Session = Depends(book_database_session)):
     book = database_connection.query(the_book_database).filter(the_book_database.book_title == book_title).all()
     if not book:
@@ -234,5 +251,5 @@ def get_book_with_title(book_title: str, database_connection: Session = Depends(
     }
 
 
-@book_app.get("/search_book_by_author")
+@book_app.get("/search_book_by_author", tags = ["Search Book"])
 def get_book_with_author():...
