@@ -6,13 +6,16 @@ current_year = datetime.now().year
 
 '''This class is used to validate an incoming request from the user, trying to update an/the attributes of a book.'''
 class UpdateBookId(BaseModel):
-    book_id: int = Field(gt = 0) 
-    book_title: Optional[str]
-    book_author: Optional[str]
-    book_genre: Optional[str]
-    book_year: int = Field(ge=1000, le=current_year)
-    book_price: float = Field(gt = 0)
-    book_description: Optional[str]
+    book_id: Optional[int] = Field(default=None, gt=0) 
+    book_title: Optional[str]  = ""
+    book_author: Optional[str] = ""
+    book_genre: Optional[str] = ""
+    book_year: Optional[int] = Field(default = None, ge=1000, le=current_year)
+    book_price: Optional[float] = Field(default = None, gt = 0)
+    book_description: Optional[str] = ""
+
+    class config:
+        extra = "forbid"
 
 
 
