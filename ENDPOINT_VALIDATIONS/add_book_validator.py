@@ -7,15 +7,16 @@ current_year = datetime.now().year
 
 class AddBook(BaseModel):
     book_id: int = Field(gt = 0)
-    book_title: str
-    book_author: str
-    book_genre: str
+    book_title: str = ""
+    book_author: str = ""
+    book_genre: str = ""
     book_year: int = Field(ge=1000, le=current_year)
-    book_price: float = Field(gt = 0)
-    book_description: str
+    book_price: float = Field(gt = -1 , le = 1000000)
+    book_description: str = ""
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        extra = "forbid"
 
     @field_validator('book_title', 'book_author', 'book_genre', 'book_description')
     @classmethod
