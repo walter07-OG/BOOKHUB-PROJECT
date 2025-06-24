@@ -232,7 +232,7 @@ def delete_book(book_to_delete_info: delete_book_validator.DeleteBook, database_
 
 '''THESE ENDPOINTS ARE FOR SEARCH AND FILTERS OF BOOKS IN THE DATABASE.'''
 
-@books_router.get("/search_a_book_by_title/{book_title}", tags = ["Search Book "], response_model = List[search_book_using_title.BookSearchResponse])
+@books_router.get("/search_a_book_by_title/{book_title}", tags = ["Search Book"], response_model = List[search_book_using_title.BookSearchResponse])
 def get_book_with_title(book_title: str, database_connection: Session = Depends(book_database_session)):
     book = database_connection.query(the_book_database).filter(the_book_database.book_title == book_title).all()
     if not book:
