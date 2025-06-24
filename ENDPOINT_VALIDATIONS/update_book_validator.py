@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Optional
 
@@ -14,8 +14,8 @@ class UpdateBookId(BaseModel):
     book_price: Optional[float] = Field(default = None, gt = 0)
     book_description: Optional[str] = ""
 
-    class config:
-        extra = "forbid"
+    model_config = ConfigDict(extra="forbid")
+    
 
 
 
@@ -25,4 +25,3 @@ class UpdateBookIdResponse(BaseModel):
     message: str
     success: bool
     code: int
-    new_price: float

@@ -1,9 +1,6 @@
 from pydantic import BaseModel
 
-class BookSearch(BaseModel):
-    book_title: str
-
-class BookSearchResponse:
+class BookSearchResponse(BaseModel):
     message: str
     book_info: dict
     sucess: str

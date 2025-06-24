@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Dict
+from ENDPOINT_VALIDATIONS.add_book_validator import AddBook
 
 '''This validator model or class is to validate the incoming json from the user to delete a book from the database.'''
 class DeleteBook(BaseModel):
