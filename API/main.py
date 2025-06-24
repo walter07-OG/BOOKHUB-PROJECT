@@ -29,6 +29,7 @@ from ENDPOINT_VALIDATIONS import book_details_validator
 from ENDPOINT_VALIDATIONS import add_book_validator
 from ENDPOINT_VALIDATIONS import update_book_validator
 from ENDPOINT_VALIDATIONS import delete_book_validator
+from ENDPOINT_VALIDATIONS import search_book_using_title
 #*****
 
 #Definitions of functions to use as database sessions to use to access the various databases we are going to use in the API
@@ -164,14 +165,15 @@ def add_books(book: add_book_validator.AddBook, database_connection: Session = D
         }
 
         ]
-@book_app.put("/update_book_by_id/{book_id}", response_model = List[update_book_validator.UpdateBookIdResponse], tags = ["Update Book"])
+@book_app.put("/update_book/{book_id}", response_model = List[update_book_validator.UpdateBookIdResponse], tags = ["Update Book"])
 def update_book(book_id: Annotated[int, Path(gt = 0, description = "Please make sure that the ID of the book is positive!")], Book_to_update_info: update_book_validator.UpdateBookId, database_connection: Session = Depends(book_database_session)):
     book = database_connection.query(the_book_database).filter(the_book_database.book_id == book_id).first()
     if book:
         # Only update fields provided by the user
-        book_updates =  Book_to_update_info.model_dump(exclude_defaults = True)
+        book_updates =  Book_to_update_info.model_dump(exclude_unset = True)
         for key, value in book_updates.items():
             try:
+                        
                 setattr(book, key, value)
             except (TypeError, ValueError, AttributeError) as TV_error:
                     return [
@@ -188,7 +190,6 @@ def update_book(book_id: Annotated[int, Path(gt = 0, description = "Please make 
                 "message": f"You have successfully updated the book, with the ID of '{book_id}'",
                 "success": True,
                 "code": 200,
-                "new_price": book.book_price
             }
         ]
     else:
@@ -197,7 +198,6 @@ def update_book(book_id: Annotated[int, Path(gt = 0, description = "Please make 
                 "message": f"Sorry, there was an error in updating the book with ID, '{book_id}'. There is no book with such ID. We suppose you create a new book with that ID or You update the ID first before updating anything else.",
                 "success": False,
                 "code": 500,
-                "new_price": 4.5
             }
         ]
                     
@@ -212,43 +212,62 @@ def delete_book(book_to_delete_info: delete_book_validator.DeleteBook, database_
     book_to_delete = database_connection.query(the_book_database).filter(the_book_database.book_id == book_to_delete_info.book_id).first()
     if not book_to_delete:
         return [
-            {
-            "message": f"Sorry there is no book with an id, '{book_to_delete_info.book_id}'",
-            "book_deleted_info": book_to_delete,
-            "success": False
-            }
-        ]
+        {
+        "message": f"You have  failed to update the book with an ID of '{book_to_delete_info.book_id}'",
+        "book_deleted_info": {
+            "book_id": book_to_delete_info.book_id,
+            
+        },
+        "success": False
+        }
+    ]
+            
+            
     
     database_connection.delete(book_to_delete)
     database_connection.commit()
     database_connection.refresh
     return [
         {
-            "message": f"You have successfully deleted the book with an ID of '{book_to_delete_info.book_id}'",
-            "book_deleted_info": book_to_delete,
-            "success": True    
+        "message": f"You have successfully deleted the book with an ID of '{book_to_delete_info.book_id}'",
+        "book_deleted_info": {
+            "book_id": book_to_delete.book_id,
+            "book_title": book_to_delete.book_title,
+            "book_author": book_to_delete.book_author,
+            "book_genre": book_to_delete.book_genre,
+            "book_year": book_to_delete.book_year,
+            "book_price": book_to_delete.book_price,
+            "book_description": book_to_delete.book_description
+        },
+        "success": True    
         }
     ]
 
 
 
 
+
 '''THESE ENDPOINTS ARE FOR SEARCH AND FILTERS OF BOOKS IN THE DATABASE.'''
 
-@book_app.get("/search_a_book_by_title/{book_title}", tags = ["Search Book "])
+@book_app.get("/search_a_book_by_title/{book_title}", tags = ["Search Book "], response_model = List[search_book_using_title.BookSearchResponse])
 def get_book_with_title(book_title: str, database_connection: Session = Depends(book_database_session)):
     book = database_connection.query(the_book_database).filter(the_book_database.book_title == book_title).all()
     if not book:
-        return {
+        return [
+            {
             "message": f"Sorry! there is no book with an ID of, '{book_title}'.",
             "sucess": True,
             "book_info": f"book_id: {book_title}"
         }
-    return {
+        ]
+    
+    return [
+        {
         "message": f"You have sucessfully retrieved the book with the title, '{book_title}'.",
         "sucess": True,
         "book_info": book
     }
+    ]
 
 
 @book_app.get("/search_book_by_author", tags = ["Search Book"])
