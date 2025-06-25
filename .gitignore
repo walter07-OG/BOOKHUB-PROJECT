@@ -1,4 +1,4 @@
 user_request.py
-BOOKHUB.db
-FAVOURITES.db
-USERS.db
+
+#Ignore all the databases files. (These are the files which ends with .db)
+*.db
