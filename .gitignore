@@ -2,3 +2,5 @@ user_request.py
 
 #Ignore all the databases files. (These are the files which ends with .db)
 *.db
+
+testing_fk.py
