@@ -21,6 +21,8 @@ def book_hub_users_database_session():
 user_router = APIRouter()
 
 
+'''Endpoint for adding a new user to the database.'''
+
 @user_router.post("/register_user", response_model = List[new_user.Response_For_New_User])
 def register_user(user_info: new_user.New_User, database_connection: Session = Depends(book_hub_users_database_session)):
     '''This endpoint is responsible for creating a new instance of a user.'''
@@ -54,3 +56,9 @@ def register_user(user_info: new_user.New_User, database_connection: Session = D
             }
         }
     ]
+
+
+
+'''Endpoint for Logging in the user when the user has an account created.'''
+@user_router.post("login", response_model =...)
+def user_login(user_login_cred:...):...
