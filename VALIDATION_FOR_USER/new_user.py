@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+from typing import Dict
+
 
 '''Model validation for the user, when the user sends a request.'''
 class New_User(BaseModel):
@@ -12,4 +14,4 @@ class New_User(BaseModel):
 class Response_For_New_User(BaseModel):
     success: bool
     message: str
-    login_id: int
+    login_cred: Dict[str, str]

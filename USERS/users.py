@@ -26,18 +26,31 @@ def register_user(user_info: new_user.New_User, database_connection: Session = D
     '''This endpoint is responsible for creating a new instance of a user.'''
     search_user = database_connection.query(the_users_database).filter(the_users_database.hashed_password == user_info.user_password)
     if search_user:
+        '''Return message when the user already exists.'''
         return [
             {
                 "success": False,
                 "message": "Sorry, the user with the entered credentials already exists. Try logging in using the login"
-                "endpoint rather. Or better still, create a new account."
+                "endpoint rather. Or better still, create a new account.",
+                "login_cred": {
+                    "Account Status": "Failed."
+                }
             }
         ]
     
-    else:
-        return [
-            {
-                "success": True,
-                "message": "You have successfully created an account with BOOKHUB API."
+    '''Operations and return message when the user is new to the database.'''
+    new_bookhub_user = model_for_users_database.USERS(**user_info.model_dump())
+    database_connection.add(new_bookhub_user)
+    database_connection.commit()
+    database_connection.refresh(new_bookhub_user)
+
+    return [
+        {
+            "success": True,
+            "message": "You have successfully created an account with BOOKHUB API.",
+            "login_cred": {
+                "password": user_info.user_password,
+                "email": user_info.user_email
             }
-        ]
+        }
+    ]
