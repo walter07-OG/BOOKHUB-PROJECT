@@ -1,5 +1,5 @@
 from sqlalchemy.orm import declarative_base, relationship
-from DATABASES import book_hub_users_database
+from DATABASES.book_hub_users_database import the_engine
 from sqlalchemy import Column, String, ForeignKey
 from model_for_book_database import Book
     
@@ -17,4 +17,4 @@ class USERS(Base):
     user_favourites = relationship("FAVOURITE_BOOKS", back_populates = "user_favourites")
 
 '''let's create the table, using metadata'''
-Base.metadata.create_all(bind = book_hub_users_database.the_engine)
+Base.metadata.create_all(bind =  the_engine)

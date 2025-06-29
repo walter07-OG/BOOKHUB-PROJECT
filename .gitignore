@@ -4,3 +4,7 @@ user_request.py
 *.db
 
 testing_fk.py
+
+BOOKHUB_API_WORKSPACE.code-workspace
+
+*.pyc

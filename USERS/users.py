@@ -1,4 +1,12 @@
+from fastapi import APIRouter, Depends
 from DATABASES import book_hub_users_database
+from VALIDATION_FOR_USER import new_user
+from sqlalchemy.orm import Session
+from typing import List
+from MODELS_FOR_DATABASES import model_for_users_database
+
+'''we create an instance of the bookhub user's database to carry on querries.'''
+the_users_database = model_for_users_database.USERS
 
 
 '''SESSION FUNCTION FOR BOOKHUB_USERS DATABASE'''
@@ -8,3 +16,28 @@ def book_hub_users_database_session():
         yield the_session
     finally:
         the_session.close()
+
+
+user_router = APIRouter()
+
+
+@user_router.post("/register_user", response_model = List[new_user.Response_For_New_User])
+def register_user(user_info: new_user.New_User, database_connection: Session = Depends(book_hub_users_database_session)):
+    '''This endpoint is responsible for creating a new instance of a user.'''
+    search_user = database_connection.query(the_users_database).filter(the_users_database.hashed_password == user_info.user_password)
+    if search_user:
+        return [
+            {
+                "success": False,
+                "message": "Sorry, the user with the entered credentials already exists. Try logging in using the login"
+                "endpoint rather. Or better still, create a new account."
+            }
+        ]
+    
+    else:
+        return [
+            {
+                "success": True,
+                "message": "You have successfully created an account with BOOKHUB API."
+            }
+        ]
