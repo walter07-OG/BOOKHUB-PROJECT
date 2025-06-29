@@ -5,6 +5,7 @@ user_request.py
 
 testing_fk.py
 
+#ignored the file for the workspace.
 BOOKHUB_API_WORKSPACE.code-workspace
 
 #ignore all the __pycache__ files.
