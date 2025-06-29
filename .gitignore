@@ -1,3 +1,4 @@
+#ignored the user_request.py file, used for testing the endpoints from a client's perspective.
 user_request.py
 
 #Ignore all the databases files. (These are the files which ends with .db)
