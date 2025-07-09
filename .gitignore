@@ -11,3 +11,4 @@ BOOKHUB_API_WORKSPACE.code-workspace
 
 #ignore all the __pycache__ files.
 *.pyc
+.python-version
