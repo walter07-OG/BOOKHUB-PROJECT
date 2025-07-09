@@ -6,7 +6,7 @@ from typing import Dict
 class New_User(BaseModel):
     user_name: str
     user_email: str
-    user_password: int
+    user_password: str 
 
 
 '''Model validation for the response to the user, when the user adds an account'''
