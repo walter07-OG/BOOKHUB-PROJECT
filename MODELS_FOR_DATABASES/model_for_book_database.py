@@ -1,6 +1,7 @@
 from sqlalchemy.orm import declarative_base
-from DATABASES import book_database
-from sqlalchemy import Column, String, INTEGER, FLOAT
+from book_database import the_engine
+from sqlalchemy import Column, String, INTEGER, FLOAT, DateTime
+from sqlalchemy.sql import func
     
 '''We design the model of the Table we want to use for storing information
 about a book.(We add the features a book has, and which we will need in the future,
@@ -17,6 +18,8 @@ class Book(Base):
     book_description = Column(String, index = True)
     book_year = Column(INTEGER, index = True)
     book_price = Column(FLOAT, index = True)
+    added_at = Column(DateTime, default=func.now())
+
 
 '''let's create the table, using metadata'''
-Base.metadata.create_all(bind = book_database.the_engine)
+Base.metadata.create_all(bind = the_engine)
