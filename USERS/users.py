@@ -25,10 +25,22 @@ def hash_api_token(actual_secret: str) -> str:
     return hashed_secret
 
 
-def verify_api_token(raw_api_token, hashed_api_token):
+def verify_api_token(raw_api_token, hashed_api_token) -> bool:
     """Verify the raw api token in the request header, against the queried hashed api token."""
-    verify = bcrypt.verify(raw_api_token, hashed_api_token)
+    verify:bool = bcrypt.verify(raw_api_token, hashed_api_token)
+    return verify
 
+
+def hash_user_account_password(user_password:str) -> str:
+    """Hash a user's password before storing to the database."""
+    hashed_password:str = bcrypt.hash(user_password)
+    return hashed_password
+
+
+def verify_user_password(raw_user_password:str, hashed_user_password:str) -> bool:
+    """Verify the user's password before carrying out any operation."""
+    verify:bool = bcrypt.verify(raw_user_password, hashed_user_password)
+    return verify
 
 
 '''we create an instance of the bookhub user's database to carry on querries.'''
@@ -67,7 +79,23 @@ def register_user(user_info: new_user.New_User, database_connection: Session = D
         ]
     
     '''Operations and return message when the user is new to the database.'''
+    user_password_to_hash = user_info.user_password     #this is the actual password of the user to hash in the database.
+
+    api_key_to_use:list = generate_api_token()      #this is the generation of the api token to use by the user.
+
+    hashed_secret:str = hash_api_token(api_key_to_use[1])     #this is the hashing of the actual api token of the user.
+
+    hashed_password:str = hash_user_account_password(user_password_to_hash)     #This is the hashing of the user's password.
+
+    look_up_id:str = api_key_to_use[0]      #this is the lookup_id to use for fast checking of the database to verify a user's api token or membership.
+
+
+
+
     new_bookhub_user = models_for_user_related_database.USERS(**user_info.model_dump())
+    new_bookhub_user["lookup_id"] = look_up_id
+    new_bookhub_user["hashed_secret"] = hashed_secret
+    new_bookhub_user["hashed_password"] = hashed_password
     database_connection.add(new_bookhub_user)
     database_connection.commit()
     database_connection.refresh(new_bookhub_user)
