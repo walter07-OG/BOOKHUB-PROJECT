@@ -3,11 +3,12 @@ name = "bookhub-api"
 version = "0.1.0"
 description = "A RESTful API for managing books, users, and favorites, built with FastAPI. BookHub API provides endpoints for user authentication, book CRUD operations, search, and user-specific favorites management. It uses SQLAlchemy for database interactions and includes robust validation for all endpoints. Ideal for powering book-related applications or integrating with frontend clients."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12.11"
 dependencies = [
     "passlib",
     "sqlalchemy",
     "fastapi",
     "secure>=1.0.1",
     "requests>=2.32.4",
+    "bcrypt>=4.3.0",
 ]
