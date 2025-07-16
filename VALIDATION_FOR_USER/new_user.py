@@ -1,12 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Dict
 
 
 '''Model validation for the user, when the user sends a request.'''
 class New_User(BaseModel):
-    user_name: str
-    user_email: str
-    user_password: str 
+    username: str
+    email: EmailStr
+    user_password: str
+    Bearer: str
+
 
 
 '''Model validation for the response to the user, when the user adds an account'''
