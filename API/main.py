@@ -12,11 +12,13 @@ Routes:
 Usage:
     Run this module to start the BookHub API server. The API will expose all book-related endpoints under the '/book' path.
 Example:
-    uvicorn main:book_api --reload
+    uvicorn API.main:book_api --reload
 """
 
+from USERS.users import user_router
 
 from BOOKS.books import books_router
 
-book_api = FastAPI()
+book_api = FastAPI(title="BOOKHUB API ENDPOINTS", version="1.0.0")
 book_api.include_router(books_router, prefix = "/book")
+book_api.include_router(user_router, prefix="/user")
