@@ -19,6 +19,6 @@ from USERS.users import user_router
 
 from BOOKS.books import books_router
 
-book_api = FastAPI(title="BOOKHUB API ENDPOINTS", version="1.0.0")
+book_api = FastAPI(title="BOOKHUB API ENDPOINTS", version="1.0.0", debug=True)
 book_api.include_router(books_router, prefix = "/book")
 book_api.include_router(user_router, prefix="/user")
