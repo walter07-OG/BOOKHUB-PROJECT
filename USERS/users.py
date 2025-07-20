@@ -170,7 +170,7 @@ def user_login(user_login_cred: user_login_cred.Login, request: Request, databas
         return [
             {
                 "success": True,
-                "message": "This was a successful login."
+                "message": f"{user_login_cred.user_email}, {user_login_cred.user_password}"
             }
         ]
 

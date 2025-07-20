@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 '''Model validation for the user request to login.'''
 class Login(BaseModel):
     user_password: str
-    user_email: str
+    user_email: EmailStr
 
 
 '''Model validation for the user when the request has been processed.'''
