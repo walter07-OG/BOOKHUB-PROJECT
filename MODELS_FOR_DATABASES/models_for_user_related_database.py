@@ -1,5 +1,5 @@
 from sqlalchemy.orm import declarative_base, relationship
-from book_hub_user_related_database import the_engine
+from MODELS_FOR_DATABASES.book_hub_user_related_database import the_engine
 from sqlalchemy import Column, String, ForeignKey, JSON, DateTime, Integer, Boolean
 from sqlalchemy.sql import func
 
@@ -10,7 +10,7 @@ class USERS(Base):
     __tablename__ =  "USERS"
     member_id = Column(Integer, primary_key=True, autoincrement=True)
     lookup_id = Column(String, index=True, unique=True, nullable=False)
-    hashed_api_key = Column(String, unique=True, nullable=False)
+    hashed_secret = Column(String, unique=True, nullable=False)
     user_id_available = Column(Boolean, index=True, default=False)
     hashed_password = Column(String, index=True, nullable=False, unique=True)
     username = Column(String, index=True)
@@ -26,7 +26,8 @@ class USERS(Base):
 '''class for the favourites database.'''
 class FAVOURITE_BOOKS(Base):
     __tablename__ =  "USER_FAVOURITES"
-    hashed_api_key = Column(String, ForeignKey("USERS.hashed_api_key"), primary_key=True, index=True)
+    favourites_id = Column(Integer, index=True)
+    hashed_secret = Column(String, ForeignKey("USERS.hashed_secret"), primary_key=True, index=True)
     user_favourites = Column(JSON, index=True, default=[])
     user = relationship("USERS", back_populates="favourites")
 

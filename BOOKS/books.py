@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends
 
 '''Import the the modules, containing the connection or session to the actual database.'''
-from DATABASES import book_database
+from MODELS_FOR_DATABASES.book_database import the_session_for_books
 
 '''Import the Session from the ORM to make database sessions'''
 from sqlalchemy.orm import Session
@@ -33,7 +33,7 @@ from ENDPOINT_VALIDATIONS import search_book_using_title
 #Definitions of functions to use as database sessions to use to access the various databases we are going to use in the API
 '''SESSION FUNCTION FOR BOOKDATABASE'''
 def book_database_session():
-    the_session = book_database.the_session_for_books()
+    the_session = the_session_for_books()
     try:
         yield the_session
     finally:

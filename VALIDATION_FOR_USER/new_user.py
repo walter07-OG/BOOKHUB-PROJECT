@@ -7,7 +7,7 @@ class New_User(BaseModel):
     username: str
     email: EmailStr
     user_password: str
-    Bearer: str
+    
 
 
 
