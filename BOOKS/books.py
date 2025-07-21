@@ -22,12 +22,12 @@ the_book_database = model_for_book_database.Book
 
 #THIS PART CONTAINS THE IMPORTS OF VALIDATION FILES, FOR THE REQUEST AND RESPONSE OF A REQUEST AND AN API RESPONSE
 #*****
-from  VALIDATION_FOR_BOOKS import get_all_books_validator
-from VALIDATION_FOR_BOOKS import book_details_validator
-from VALIDATION_FOR_BOOKS import add_book_validator
-from VALIDATION_FOR_BOOKS import update_book_validator
-from VALIDATION_FOR_BOOKS import delete_book_validator
-from VALIDATION_FOR_BOOKS import search_book_using_title
+from .VALIDATION_FOR_BOOKS import get_all_books_validator
+from .VALIDATION_FOR_BOOKS import book_details_validator
+from .VALIDATION_FOR_BOOKS import add_book_validator
+from .VALIDATION_FOR_BOOKS import update_book_validator
+from .VALIDATION_FOR_BOOKS import delete_book_validator
+from .VALIDATION_FOR_BOOKS import search_book_using_title
 #*****
 
 #Definitions of functions to use as database sessions to use to access the various databases we are going to use in the API

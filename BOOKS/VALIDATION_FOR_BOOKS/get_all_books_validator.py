@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from ENDPOINT_VALIDATIONS.add_book_validator import AddBook
+from .add_book_validator import AddBook
 from typing import List
 
 '''The validation class for get_all_books() endpoint'''

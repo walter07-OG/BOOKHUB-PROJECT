@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from ENDPOINT_VALIDATIONS.add_book_validator import AddBook
+from .add_book_validator import AddBook
 
 '''the validator for returning the book details using book ID'''
 

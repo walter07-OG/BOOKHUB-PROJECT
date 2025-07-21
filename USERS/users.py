@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Request, status, HTTPException
 from MODELS_FOR_DATABASES import book_hub_user_related_database
-from VALIDATION_FOR_USER import new_user, user_login_cred
+from .VALIDATION_FOR_USER.new_user import New_User, Response_For_New_User
+from .VALIDATION_FOR_USER.user_login_cred import Login, LoginMessage
 from sqlalchemy.orm import Session
 from typing import List
 from MODELS_FOR_DATABASES import models_for_user_related_database
@@ -94,8 +95,8 @@ user_router = APIRouter()
 
 '''Endpoint for adding a new user to the database.'''
 
-@user_router.post("/register_user", response_model = List[new_user.Response_For_New_User], tags=["Add New User"])
-def register_user(user_info: new_user.New_User, database_connection: Session = Depends(book_hub_users_database_session)):
+@user_router.post("/register_user", response_model = List[Response_For_New_User], tags=["Add New User"])
+def register_user(user_info: New_User, database_connection: Session = Depends(book_hub_users_database_session)):
     '''This endpoint is responsible for creating a new instance of a user.'''
 
     search_user = database_connection.query(the_users_database).filter(the_users_database.email == user_info.email).first()
@@ -162,21 +163,32 @@ def register_user(user_info: new_user.New_User, database_connection: Session = D
 
 
 '''Endpoint for Logging in the user when the user has created an account.'''
-@user_router.post("/login", response_model = List[user_login_cred.LoginMessage], tags=["Login User"])
-def user_login(user_login_cred: user_login_cred.Login, request: Request, database_connection: Session = Depends(book_hub_users_database_session)):
-    is_member = get_api_token(request, database_connection)
+@user_router.post("/login", response_model=List[LoginMessage], tags=["Login User"])
+def user_login(user_login_cred: Login, database_connection: Session = Depends(book_hub_users_database_session)):
+    # Find user by email
+    user = database_connection.query(the_users_database).filter(the_users_database.email == user_login_cred.user_email).first()
+    if not user:
+        return [{
+            "success": False,
+            "message": "User not found. Please register first."
+        }]
+    
 
-    if is_member == "True":
-        return [
-            {
-                "success": True,
-                "message": f"{user_login_cred.user_email}, {user_login_cred.user_password}"
-            }
-        ]
+    # Ensure hashed_password is a string (should be if ORM is set up correctly)
+    hashed_password = user.hashed_password if isinstance(user.hashed_password, str) else str(user.hashed_password)
 
-    return [
-        {
-        "message": False,
-        "success": "This login was unsuccessful."
-        }
-    ]
+    # Verify password
+    if not verify_user_password(user_login_cred.user_password, hashed_password):
+        return [{
+            "success": False,
+            "message": "Incorrect password."
+        }]
+
+    # Return the user's API token (or generate a new one if you want to rotate tokens)
+    # Here, we return the existing token for simplicity
+    return [{
+        "success": True,
+        "message": "Login successful.",
+        "Bearer": user.hashed_secret,
+        "lookup_id": user.lookup_id
+    }]
