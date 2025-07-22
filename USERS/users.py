@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request, status, HTTPException
 from MODELS_FOR_DATABASES import book_hub_user_related_database
 from .VALIDATION_FOR_USER.new_user import New_User, Response_For_New_User
 from .VALIDATION_FOR_USER.user_login_cred import Login, LoginMessage
+from .VALIDATION_FOR_USER.user_logout import Logout_message
 from sqlalchemy.orm import Session
 from typing import List
 from MODELS_FOR_DATABASES import models_for_user_related_database
@@ -10,7 +11,7 @@ import secrets
 import string
 
 
-def generate_api_token(length=64) -> list[str]:
+async def generate_api_token(length=64) -> list[str]:
     """Generate a securely random API token."""
     alphabet:str = string.ascii_letters + string.digits
     api_token:str = ''.join(secrets.choice(alphabet) for i in range(length))
@@ -22,13 +23,13 @@ def generate_api_token(length=64) -> list[str]:
     return [lookup_id, api_token]
 
 
-def hash_api_token(actual_secret: str) -> str:
+async def hash_api_token(actual_secret: str) -> str:
     """Hash the generated api token to store to the database."""
     hashed_secret:str = bcrypt.hash(actual_secret)
     return hashed_secret
 
 
-def verify_api_token(raw_api_token, hashed_api_token) -> bool:
+async def verify_api_token(raw_api_token, hashed_api_token) -> bool:
     """Verify the raw api token in the request header, against the queried hashed api token."""
     verify:bool = bcrypt.verify(raw_api_token, hashed_api_token)
     
@@ -37,13 +38,13 @@ def verify_api_token(raw_api_token, hashed_api_token) -> bool:
 
 
 
-def hash_user_account_password(user_password:str) -> str:
+async def hash_user_account_password(user_password:str) -> str:
     """Hash a user's password before storing to the database."""
     hashed_password:str = bcrypt.hash(user_password)
     return hashed_password
 
 
-def verify_user_password(raw_user_password:str, hashed_user_password:str) -> bool:
+async def verify_user_password(raw_user_password:str, hashed_user_password:str) -> bool:
     """Verify the user's password before carrying out any operation."""
     verify:bool = bcrypt.verify(raw_user_password, hashed_user_password)
     return verify
@@ -54,7 +55,7 @@ the_users_database = models_for_user_related_database.USERS
 
 
 '''SESSION FUNCTION FOR BOOKHUB_USERS DATABASE'''
-def book_hub_users_database_session():
+async def book_hub_users_database_session():
     the_session = book_hub_user_related_database.the_session_for_users()
     try:
         yield the_session
@@ -62,7 +63,7 @@ def book_hub_users_database_session():
         the_session.close()
 
 
-def get_api_token(request: Request, database_connection: Session = Depends(book_hub_users_database_session)) -> bool:
+async def get_api_token(request: Request, database_connection: Session = Depends(book_hub_users_database_session)) -> bool:
     '''This function is used to get the API token from the user's request header.'''
     
     auth_header = request.headers.get("Authorization")
@@ -84,7 +85,7 @@ def get_api_token(request: Request, database_connection: Session = Depends(book_
             detail="Invalid API token",
         )
     hashed_api_token = user_row.hashed_secret
-    is_member = verify_api_token(user_api_token, hashed_api_token)
+    is_member = await verify_api_token(user_api_token, hashed_api_token)
     return is_member
 
 
@@ -96,7 +97,7 @@ user_router = APIRouter()
 '''Endpoint for adding a new user to the database.'''
 
 @user_router.post("/register_user", response_model = List[Response_For_New_User], tags=["Add New User"])
-def register_user(user_info: New_User, database_connection: Session = Depends(book_hub_users_database_session)):
+async def register_user(user_info: New_User, database_connection: Session = Depends(book_hub_users_database_session)):
     '''This endpoint is responsible for creating a new instance of a user.'''
 
     search_user = database_connection.query(the_users_database).filter(the_users_database.email == user_info.email).first()
@@ -119,13 +120,13 @@ def register_user(user_info: New_User, database_connection: Session = Depends(bo
     user_password_to_hash = user_info.user_password
 
     #this is the generation of the api token to use by the user.
-    api_token_to_use:list = generate_api_token()
+    api_token_to_use:list = await generate_api_token()
 
     #this is the hashing of the actual api token of the user.
-    hashed_secret:str = hash_api_token(api_token_to_use[1])
+    hashed_secret:str = await hash_api_token(api_token_to_use[1])
 
     #This is the hashing of the user's password.
-    hashed_password:str = hash_user_account_password(user_password_to_hash)     
+    hashed_password:str = await hash_user_account_password(user_password_to_hash)     
 
     #this is the lookup_id to use for fast checking of the database to verify a user's api token or membership.
     look_up_id:str = api_token_to_use[0]      
@@ -164,7 +165,7 @@ def register_user(user_info: New_User, database_connection: Session = Depends(bo
 
 '''Endpoint for Logging in the user when the user has created an account.'''
 @user_router.post("/login", response_model=List[LoginMessage], tags=["Login User"])
-def user_login(user_login_cred: Login, database_connection: Session = Depends(book_hub_users_database_session)):
+async def user_login(user_login_cred: Login, database_connection: Session = Depends(book_hub_users_database_session)):
     # Find user by email
     user = database_connection.query(the_users_database).filter(the_users_database.email == user_login_cred.user_email).first()
     if not user:
@@ -192,3 +193,8 @@ def user_login(user_login_cred: Login, database_connection: Session = Depends(bo
         "Bearer": user.hashed_secret,
         "lookup_id": user.lookup_id
     }]
+
+
+@user_router.post("/logout", response_model=List[Logout_message], tags=["Logout"])
+async def user_logout(database_connection: Session = Depends(book_hub_users_database_session)):...
+"""The logic is implemented to get the user's api token to add to the blacklist"""
