@@ -96,7 +96,7 @@ user_router = APIRouter()
 
 '''Endpoint for adding a new user to the database.'''
 
-@user_router.post("/register_user", response_model = List[Response_For_New_User], tags=["Add New User"])
+@user_router.post("/register", response_model = List[Response_For_New_User], tags=["Add New User"])
 async def register_user(user_info: New_User, database_connection: Session = Depends(book_hub_users_database_session)):
     '''This endpoint is responsible for creating a new instance of a user.'''
 
