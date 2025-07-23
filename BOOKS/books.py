@@ -190,7 +190,7 @@ def update_book(book_id: Annotated[int, Path(gt = 0, description = "Please make 
 
 
 
-@books_router.delete("/delete_a_book_by_id", response_model = List[delete_book_validator.DeleteBookResponse], tags = ["Delete Book"])
+@books_router.delete("/delete_ book_id", response_model = List[delete_book_validator.DeleteBookResponse], tags = ["Delete Book"])
 def delete_book(book_to_delete_info: delete_book_validator.DeleteBook, database_connection: Session = Depends(book_database_session)):
     book_to_delete = database_connection.query(the_book_database).filter(the_book_database.book_id == book_to_delete_info.book_id).first()
     if not book_to_delete:
