@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict
 
 current_year = datetime.now().year
@@ -13,6 +13,7 @@ class AddBook(BaseModel):
     book_year: int = Field(ge=1000, le=current_year)
     book_price: float = Field(gt = -1 , le = 1000000)
     book_description: str = ""
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Config:
         from_attributes = True

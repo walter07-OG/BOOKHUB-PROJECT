@@ -247,8 +247,8 @@ def get_book_with_title(book_title: str, database_connection: Session = Depends(
     return [
         {
         "message": f"You have sucessfully retrieved the book with the title, '{book_title}'.",
-        "sucess": True,
-        "book_info": book
+        "book_info": book,
+        "sucess": True
     }
     ]
 
