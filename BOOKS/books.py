@@ -1,5 +1,5 @@
 '''Import the fastapi module to create an instance of an app to decorate the api endpoints'''
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 '''Import the the modules, containing the connection or session to the actual database.'''
 from MODELS_FOR_DATABASES.book_database import the_session_for_books
@@ -248,7 +248,7 @@ def get_book_with_title(book_title: str, database_connection: Session = Depends(
             "book_price": 0.0,
             "book_description": ""
             },
-            "sucess": True
+            "success": True
         }
         ]
     
@@ -264,10 +264,48 @@ def get_book_with_title(book_title: str, database_connection: Session = Depends(
             "book_price": book.book_price,
             "book_description": book.book_description
         },
-        "sucess": True
+        "success": True
     }
     ]
 
 
-@books_router.get("/search_book_by_author", tags = ["Search Book"])
-def get_book_with_author():...
+@books_router.get("/search_book_by_author", tags=["Search Book"], response_model=List[get_books_response.BookSearchResponse])
+def get_books_by_author(
+    author_name: str = Query(..., description="Name of the author to search for"),
+    database_connection: Session = Depends(book_database_session)
+):
+    books = database_connection.query(the_book_database).filter(the_book_database.book_author.ilike(f"%{author_name}%"))
+
+    if not books:
+        return [
+            {
+                "message": f"Sorry! There are no books by author '{author_name}'.",
+                "book_info": {
+                    "book_id": 1,
+                    "book_title": "",
+                    "book_author": "",
+                    "book_genre": "",
+                    "book_year": 1000,
+                    "book_price": 0.0,
+                    "book_description": ""
+                },
+                "success": False
+            }
+        ]
+    
+    return [
+        {
+            "message": f"You have successfully retrieved books by author '{author_name}'.",
+            "book_info": {
+                "book_id": book.book_id,
+                "book_title": book.book_title,
+                "book_author": book.book_author,
+                "book_genre": book.book_genre,
+                "book_year": book.book_year,
+                "book_price": book.book_price,
+                "book_description": book.book_description
+            },
+            "success": True
+        }
+        for book in books
+    ]
