@@ -27,7 +27,7 @@ from .VALIDATION_FOR_BOOKS import book_details_validator
 from .VALIDATION_FOR_BOOKS import add_book_validator
 from .VALIDATION_FOR_BOOKS import update_book_validator
 from .VALIDATION_FOR_BOOKS import delete_book_validator
-from .VALIDATION_FOR_BOOKS import search_book_using_title
+from .VALIDATION_FOR_BOOKS import get_books_response
 #*****
 
 #Definitions of functions to use as database sessions to use to access the various databases we are going to use in the API
@@ -143,7 +143,7 @@ def add_books(book: add_book_validator.AddBook, database_connection: Session = D
         return [
             {
             "success": False,
-            "message": "Sorry there was an error in the submited model. The solution to this problem is that,  make sure  the model can be changed to a json",
+            "message": f"Sorry there was an error in the submited model. The solution to this problem is that,  make sure  the model can be changed to a json {exception}",
             "book": {}
         }
 
@@ -232,22 +232,38 @@ def delete_book(book_to_delete_info: delete_book_validator.DeleteBook, database_
 
 '''THESE ENDPOINTS ARE FOR SEARCH AND FILTERS OF BOOKS IN THE DATABASE.'''
 
-@books_router.get("/search_a_book_by_title/{book_title}", tags = ["Search Book"], response_model = List[search_book_using_title.BookSearchResponse])
+@books_router.get("/search_a_book_by_title/{book_title}", tags = ["Search Book"], response_model = List[get_books_response.BookSearchResponse])
 def get_book_with_title(book_title: str, database_connection: Session = Depends(book_database_session)):
-    book = database_connection.query(the_book_database).filter(the_book_database.book_title == book_title).all()
+    book = database_connection.query(the_book_database).filter(the_book_database.book_title == book_title).first()
     if not book:
         return [
             {
-            "message": f"Sorry! there is no book with an ID of, '{book_title}'.",
-            "sucess": True,
-            "book_info": f"book_id: {book_title}"
+            "message": f"Sorry! there is no book with a title of '{book_title}'.",
+            "book_info": {
+            "book_id": 1,  # Changed from 0 to meet gt=0 validation
+            "book_title": "",
+            "book_author": "",
+            "book_genre": "",
+            "book_year": 1000,  # Changed from 0 to meet ge=1000 validation
+            "book_price": 0.0,
+            "book_description": ""
+            },
+            "sucess": True
         }
         ]
     
     return [
         {
         "message": f"You have sucessfully retrieved the book with the title, '{book_title}'.",
-        "book_info": book,
+        "book_info": {
+            "book_id": book.book_id,
+            "book_title": book.book_title,
+            "book_author": book.book_author,
+            "book_genre": book.book_genre,
+            "book_year": book.book_year,
+            "book_price": book.book_price,
+            "book_description": book.book_description
+        },
         "sucess": True
     }
     ]
