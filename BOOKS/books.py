@@ -271,15 +271,17 @@ def get_book_with_title(book_title: str, database_connection: Session = Depends(
 
 @books_router.get("/search_book_by_author", tags=["Search Book"], response_model=List[get_books_response.BookSearchResponse])
 def get_books_by_author(
-    author_name: str = Query(..., description="Name of the author to search for"),
+    author_keyword: str = Query(..., description="Name of the author to search for"),
     database_connection: Session = Depends(book_database_session)
 ):
-    books = database_connection.query(the_book_database).filter(the_book_database.book_author.ilike(f"%{author_name}%"))
+    books = database_connection.query(the_book_database).filter(
+        the_book_database.book_author.ilike(f"%{author_keyword}%")
+    ).all()  # <-- important
 
     if not books:
         return [
             {
-                "message": f"Sorry! There are no books by author '{author_name}'.",
+                "message": f"Sorry! There are no books by author '{author_keyword}'.",
                 "book_info": {
                     "book_id": 1,
                     "book_title": "",
@@ -295,7 +297,7 @@ def get_books_by_author(
     
     return [
         {
-            "message": f"You have successfully retrieved books by author '{author_name}'.",
+            "message": f"You have successfully retrieved books by author '{author_keyword}'.",
             "book_info": {
                 "book_id": book.book_id,
                 "book_title": book.book_title,
