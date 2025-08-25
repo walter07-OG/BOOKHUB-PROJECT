@@ -269,5 +269,39 @@ def get_book_with_title(book_title: str, database_connection: Session = Depends(
     ]
 
 
-@books_router.get("/search_book_by_author", tags = ["Search Book"])
-def get_book_with_author():...
+@books_router.get("/search_book_by_author", tags = ["Search Book"], response_model = List[get_books_response.BookSearchResponse])
+def get_book_with_author(book_author: str, database_connection: Session = Depends(book_database_session)):
+    book = database_connection.query(the_book_database).filter(the_book_database.book_author == book_author).first()
+    if not book:
+        return [
+            {
+            "message": f"Sorry! there is no book with an author with the name of '{book_author}'.",
+            "book_info": {
+            "book_id": 1,  
+            "book_title": "",
+            "book_author": "",
+            "book_genre": "",
+            "book_year": 1000,  
+            "book_price": 0.0,
+            "book_description": ""
+            },
+            "sucess": True
+        }
+        ]
+    
+    return [
+        {
+        "message": f"You have sucessfully retrieved the book with the title, '{book_author}'.",
+        "book_info": {
+            "book_id": book.book_id,
+            "book_title": book.book_title,
+            "book_author": book.book_author,
+            "book_genre": book.book_genre,
+            "book_year": book.book_year,
+            "book_price": book.book_price,
+            "book_description": book.book_description
+        },
+        "sucess": True
+    }
+    ]
+
