@@ -63,7 +63,7 @@ def get_all_books(database_connection: Session = Depends(book_database_session))
     the_books_in_the_database = database_connection.query(the_book_database).all()
     return [
         {
-        "success": "True",
+        "success": True,
         "message": "Books retrieved successfully.",
         "books": the_books_in_the_database
     }
@@ -270,12 +270,13 @@ def get_book_with_title(book_title: str, database_connection: Session = Depends(
 
 
 @books_router.get("/search_book_by_author", tags = ["Search Book"], response_model = List[get_books_response.BookSearchResponse])
-def get_book_with_author(book_author: str, database_connection: Session = Depends(book_database_session)):
-    book = database_connection.query(the_book_database).filter(the_book_database.book_author == book_author).first()
+def get_book_with_author(author_keyword: str, database_connection: Session = Depends(book_database_session)):
+    book = database_connection.query(the_book_database).filter(the_book_database.book_author.ilike(f"%{author_keyword}%")).all()
+        
     if not book:
         return [
             {
-            "message": f"Sorry! there is no book with an author with the name of '{book_author}'.",
+            "message": f"Sorry! there are no authors that match '{author_keyword}'.",
             "book_info": {
             "book_id": 1,  
             "book_title": "",
@@ -285,13 +286,13 @@ def get_book_with_author(book_author: str, database_connection: Session = Depend
             "book_price": 0.0,
             "book_description": ""
             },
-            "sucess": True
+            "success": True
         }
         ]
     
     return [
         {
-        "message": f"You have sucessfully retrieved the book with the title, '{book_author}'.",
+        "message": f"Match successful! Listing books from author that match '{author_keyword}'.",
         "book_info": {
             "book_id": book.book_id,
             "book_title": book.book_title,
@@ -301,7 +302,9 @@ def get_book_with_author(book_author: str, database_connection: Session = Depend
             "book_price": book.book_price,
             "book_description": book.book_description
         },
-        "sucess": True
+        "success": True
     }
     ]
+
+
 
