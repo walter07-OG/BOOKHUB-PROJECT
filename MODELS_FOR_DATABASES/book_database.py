@@ -2,7 +2,7 @@
 the sql database we will create and connect to sqlachemy'''
 from sqlalchemy import create_engine
 
-'''We again import the session to create a sqlalchemy session to the database  to carry out
+'''We again import the session to create a sqlalchemy session to the database to carry out
 database functions, when needed.'''
 from sqlalchemy.orm import sessionmaker
 
