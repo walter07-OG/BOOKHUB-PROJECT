@@ -148,7 +148,7 @@ def add_books(book: add_book_validator.AddBook, database_connection: Session = D
         }
 
         ]
-@books_router.put("/update_book/{book_id}", response_model = List[update_book_validator.UpdateBookIdResponse], tags = ["Update Book"])
+@books_router.patch("/update_book/{book_id}", response_model = List[update_book_validator.UpdateBookIdResponse], tags = ["Update Book"])
 def update_book(book_id: Annotated[int, Path(gt = 0, description = "Please make sure that the ID of the book is positive!")], Book_to_update_info: update_book_validator.UpdateBookId, database_connection: Session = Depends(book_database_session)):
     book = database_connection.query(the_book_database).filter(the_book_database.book_id == book_id).first()
     if book:
