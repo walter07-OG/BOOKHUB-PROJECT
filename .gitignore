@@ -15,6 +15,7 @@ BOOKHUB_API_WORKSPACE.code-workspace
 
 
 notebook.ipynb
+<<<<<<< HEAD
 
 
 API/__pycache__/main.cpython-313.pyc
@@ -23,3 +24,6 @@ BOOKHUB.db
 endpoints.md
 BOOKS/__pycache__/books.cpython-313.pyc
 BOOKHUB.db
+=======
+endpoints.md
+>>>>>>> 61ad651 (Add endpoints.md to .gitignore to exclude documentation files from version control)
