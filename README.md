@@ -35,7 +35,7 @@ BookHub API is a RESTful service for managing books, users, and user favorites. 
 
 ### Running the API
 ```sh
-uvicorn API.main:app --reload
+uvicorn API.main:book_api --reload
 ```
 
 The API will be available at `http://127.0.0.1:8000`.
