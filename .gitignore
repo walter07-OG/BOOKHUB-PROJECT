@@ -1,6 +1,9 @@
 #ignored the user_request.py file, used for testing the endpoints from a client's perspective.
 user_request.py
 
+# Environment variables
+.env
+
 #Ignore all the databases files. (These are the files which ends with .db)
 *.db
 
@@ -15,15 +18,5 @@ BOOKHUB_API_WORKSPACE.code-workspace
 
 
 notebook.ipynb
-<<<<<<< HEAD
-
-
-API/__pycache__/main.cpython-313.pyc
-BOOKS/__pycache__/books.cpython-313.pyc
-BOOKHUB.db
 endpoints.md
-BOOKS/__pycache__/books.cpython-313.pyc
-BOOKHUB.db
-=======
-endpoints.md
->>>>>>> 61ad651 (Add endpoints.md to .gitignore to exclude documentation files from version control)
+USERS/tests.ipynb
