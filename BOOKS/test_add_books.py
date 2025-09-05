@@ -19,7 +19,7 @@ class TestAddBookEndpoint(unittest.TestCase):
             "book_title": "Test Book",
             "book_author": "Test Author",
             "book_genre": "Test Genre",
-            "book_year": 2023,
+            "book_year": 2026,
             "book_price": 29.99,
             "book_description": "Test description"
         }

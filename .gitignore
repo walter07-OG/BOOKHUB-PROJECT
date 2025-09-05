@@ -20,3 +20,4 @@ BOOKHUB_API_WORKSPACE.code-workspace
 notebook.ipynb
 endpoints.md
 USERS/tests.ipynb
+BOOKS/test_add_books.py

@@ -272,6 +272,7 @@ async def get_api_token(request: Request, database_connection: Session = Depends
         )
     hashed_api_token = user_row.hashed_secret
     is_member = await verify_api_token(user_api_token, hashed_api_token)
+    
     return is_member
 
 
