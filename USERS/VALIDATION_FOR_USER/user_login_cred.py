@@ -11,5 +11,4 @@ class LoginMessage(BaseModel):
     success: bool
     message: str
     Bearer: str | None = None  # JWT token
-    lookup_id: str | None = None  # Kept for backward compatibility, can be removed later
     
